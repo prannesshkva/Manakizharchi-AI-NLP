@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manakizharchi AI v2.0 | Hybrid NLP &amp; Agentic Sentiment Intelligence</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="brand-group">
+        <div class="brand-icon">
+          <i class="fas fa-brain"></i>
+        </div>
+        <div>
+          <div class="brand-title-row">
+            <h1>Manakizharchi AI</h1>
+            <span class="version-pill">v2.0</span>
+          </div>
+          <p class="brand-subtitle">Hybrid NLP, Confidence-Gated Agentic Routing &amp; Qdrant RAG Sentiment Intelligence</p>
+        </div>
+      </div>
+
+      <div class="system-pills" id="healthStatusPills">
+        <span class="status-pill" id="pillStatus"><span class="dot pulse"></span> Initializing...</span>
+        <span class="status-pill muted" id="pillQdrant">Qdrant: -- pts</span>
+        <span class="status-pill muted" id="pillCache">Cache: 0%</span>
+        <a href="/docs" target="_blank" class="status-pill link"><i class="fas fa-code"></i> Swagger API</a>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-tab="analyzer">
+        <i class="fas fa-microscope"></i> Hybrid Analyzer
+      </button>
+      <button class="tab-btn" data-tab="batch">
+        <i class="fas fa-layer-group"></i> Batch Pipeline
+      </button>
+      <button class="tab-btn" data-tab="social">
+        <i class="fas fa-comments"></i> Social Engagement
+      </button>
+      <button class="tab-btn" data-tab="kb">
+        <i class="fas fa-database"></i> Qdrant KB &amp; Telemetry
+      </button>
+    </nav>
+
+    <!-- Main View Container -->
+    <main class="content-area">
+      <!-- ==================== TAB 1: HYBRID ANALYZER ==================== -->
+      <section class="tab-panel active" id="tab-analyzer">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-wand-magic-sparkles"></i> Real-Time Two-Stage Sentiment Analyzer</h2>
+            <span class="hint">Try straightforward praise vs. Gen-Z slang, sarcasm, mixed clauses, or noisy HTML</span>
+          </div>
+
+          <!-- Preset Scenarios -->
+          <div class="preset-row">
+            <span class="preset-label">Presets:</span>
+            <button type="button" class="preset-chip" data-text="Absolutely loved these headphones! Crystal clear sound, ultra comfortable ear cushions, and super fast delivery.">
+              <span class="badge-dot green"></span> Clear Positive (Stage-1 Fast)
+            </button>
+            <button type="button" class="preset-chip" data-text="im literally dead rn 💀😂 this beat drop is straight fire no cap 🔥">
+              <span class="badge-dot indigo"></span> Gen-Z Slang (Stage-2 RAG)
+            </button>
+            <button type="button" class="preset-chip" data-text="Oh great, another 3-hour crash right before the demo!! Best update ever 🙄">
+              <span class="badge-dot rose"></span> Sarcasm (Stage-2 RAG)
+            </button>
+            <button type="button" class="preset-chip" data-text="The display quality is gorgeous and crisp, however the battery drains terribly fast and gets hot.">
+              <span class="badge-dot amber"></span> Mixed Polarity (Chunking)
+            </button>
+            <button type="button" class="preset-chip" data-text="Bro sema mass performance!! Vera level energy throughout, zero mokkai 🔥">
+              <span class="badge-dot indigo"></span> Tanglish Idiom (Qdrant RAG)
+            </button>
+            <button type="button" class="preset-chip" data-text="<div>OMG this app is SOOOOO GOOOOD!! ❤️ https://promo.example.com/ref=99 @dev_team #MustHave</div>">
+              <span class="badge-dot cyan"></span> Noisy HTML + URLs
+            </button>
+          </div>
+
+          <textarea id="analyzeInput" placeholder="Enter unstructured text, review, tweet, slang, sarcasm, or noisy HTML..."></textarea>
+
+          <div class="controls-row">
+            <div class="control-options">
+              <label class="toggle-label">
+                <input type="checkbox" id="optForceStage2" />
+                <span>Force Stage-2 Qdrant RAG</span>
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="optIncludePos" checked />
+                <span>NLTK POS Tags</span>
+              </label>
+              <label class="slider-label">
+                <span>Gate Threshold (&tau;): <strong id="thresholdVal">0.68</strong></span>
+                <input type="range" id="optThreshold" min="0.30" max="0.95" step="0.02" value="0.68" />
+              </label>
+            </div>
+
+            <button type="button" id="runAnalyzeBtn" class="primary-btn">
+              <span>Run Pipeline</span>
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Dashboard -->
+        <div id="analyzeResults" class="results-section hidden">
+          <!-- Verdict Summary Banner -->
+          <div class="verdict-banner card" id="verdictBanner">
+            <div class="verdict-left">
+              <div class="verdict-eyebrow">Final Pipeline Verdict</div>
+              <div class="verdict-title-row">
+                <span class="verdict-label" id="resLabel">--</span>
+                <span class="verdict-confidence" id="resConfidence">--%</span>
+              </div>
+              <div class="emotion-chips" id="resEmotions"></div>
+            </div>
+
+            <div class="verdict-right">
+              <div class="telemetry-badge" id="resRoutingPath">STAGE1_VADER_FAST</div>
+              <div class="latency-stat">
+                <span id="resLatency">0.0</span> ms &bull; <span id="resProvider">--</span>
+              </div>
+              <div class="ambiguity-flags" id="resAmbiguityFlags"></div>
+            </div>
+          </div>
+
+          <!-- Interpretation Callout -->
+          <div class="card interpretation-card">
+            <h3><i class="fas fa-robot"></i> Semantic Interpretation &amp; Routing Rationale</h3>
+            <p id="resInterpretation">--</p>
+          </div>
+
+          <!-- Two-Column Breakdown: VADER Polarity & NLP Preprocessing -->
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-sliders"></i> Stage-1 VADER Lexicon Profile</h3>
+                <span class="mono-pill" id="resCompound">compound: 0.000</span>
+              </div>
+              <div class="vader-bars">
+                <div class="bar-item">
+                  <div class="bar-meta"><span>Positive</span><span id="barPosVal">0%</span></div>
+                  <div class="bar-track"><div class="bar-fill pos" id="barPos"></div></div>
+                </div>
+                <div class="bar-item">
+                  <div class="bar-meta"><span>Neutral</span><span id="barNeuVal">0%</span></div>
+                  <div class="bar-track"><div class="bar-fill neu" id="barNeu"></div></div>
+                </div>
+                <div class="bar-item">
+                  <div class="bar-meta"><span>Negative</span><span id="barNegVal">0%</span></div>
+                  <div class="bar-track"><div class="bar-fill neg" id="barNeg"></div></div>
+                </div>
+              </div>
+              <div class="sub-section" id="chunkSentimentsSection">
+                <h4><i class="fas fa-scissors"></i> Semantic Chunk Polarities</h4>
+                <div id="chunkList" class="chunk-list"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-filter"></i> NLP Feature Extraction &amp; Hygiene</h3>
+                <span class="mono-pill cyan" id="resNoisePct">0% noise stripped</span>
+              </div>
+              <div class="canonical-box">
+                <div class="small-label">Canonical Cleaned Text:</div>
+                <code id="resCanonical">--</code>
+              </div>
+              <div class="tag-group" id="resNoiseTags"></div>
+              <div class="linguistic-grid">
+                <div><span class="small-label">Slang/Idioms</span><div id="resSlang" class="pill-wrap"></div></div>
+                <div><span class="small-label">Negations</span><div id="resNegations" class="pill-wrap"></div></div>
+                <div><span class="small-label">Contrasts</span><div id="resContrasts" class="pill-wrap"></div></div>
+              </div>
+              <div class="sub-section" id="posSection">
+                <h4><i class="fas fa-tags"></i> NLTK POS Tags &amp; Lemmas</h4>
+                <div id="posTokensWrap" class="pos-tokens-wrap"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Qdrant Hybrid RAG Matches -->
+          <div class="card" id="ragEvidenceCard">
+            <div class="card-header">
+              <h3><i class="fas fa-vector-square"></i> Stage-2 Qdrant Hybrid RRF Retrieved Precedents</h3>
+              <span class="hint">Cosine Dense + Sparse BM25 merged via Reciprocal Rank Fusion (k=60)</span>
+            </div>
+            <div id="ragMatchesList" class="rag-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: BATCH PIPELINE ==================== -->
+      <section class="tab-panel" id="tab-batch">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-bolt"></i> Asynchronous Batch Throughput Pipeline</h2>
+            <button type="button" id="loadSampleBatchBtn" class="secondary-btn">
+              <i class="fas fa-flask"></i> Load Mixed 24-Sample Eval Suite
+            </button>
+          </div>
+          <p class="hint-block">
+            Paste one unstructured text input per line (supports up to 2,500 lines concurrently via <code>asyncio.Semaphore</code> + Pydantic validation).
+          </p>
+          <textarea id="batchInput" placeholder="Line 1: Amazing product love it!&#10;Line 2: im dead 💀 straight fire tbh&#10;Line 3: Oh great another crash 🙄&#10;Line 4: Fast delivery but broken lid..."></textarea>
+          <div class="controls-row">
+            <div class="control-options">
+              <label class="slider-label">
+                <span>Async Concurrency: <strong id="concurrencyVal">32</strong></span>
+                <input type="range" id="optConcurrency" min="4" max="64" step="4" value="32" />
+              </label>
+            </div>
+            <button type="button" id="runBatchBtn" class="primary-btn">
+              <span>Execute Async Batch</span>
+              <i class="fas fa-play"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="batchResults" class="hidden">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Total Inputs</div>
+              <div class="kpi-value" id="bTotal">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Stage-1 Fast Share</div>
+              <div class="kpi-value green" id="bFastPct">0%</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Ambiguities Resolved</div>
+              <div class="kpi-value indigo" id="bAmbiguities">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Mean / P95 Latency</div>
+              <div class="kpi-value cyan" id="bLatency">0 ms</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Wall Time</div>
+              <div class="kpi-value" id="bWallTime">0 ms</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3><i class="fas fa-table"></i> Per-Item Routing &amp; Verdict Breakdown</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Input Snippet</th>
+                    <th>Verdict</th>
+                    <th>Confidence</th>
+                    <th>Routing Path</th>
+                    <th>Ambiguity Cues</th>
+                    <th>Latency</th>
+                  </tr>
+                </thead>
+                <tbody id="batchTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: SOCIAL ENGAGEMENT ==================== -->
+      <section class="tab-panel" id="tab-social">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fab fa-instagram"></i> Social Media &amp; Audience Comment Analyzer</h2>
+            <button type="button" id="loadSocialDemoBtn" class="secondary-btn">
+              <i class="fas fa-sparkles"></i> Load Demo Campaign
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label class="field-label">Public Instagram Post / Reel URL (Optional)</label>
+              <input type="text" id="socialUrl" placeholder="https://www.instagram.com/p/..." />
+            </div>
+            <div>
+              <label class="field-label">Post Caption / Context</label>
+              <textarea id="socialCaption" class="short-textarea" placeholder="Paste caption text or leave blank to attempt public oEmbed/OG fetch..."></textarea>
+            </div>
+            <div>
+              <label class="field-label">Audience Comments (one comment per line — evaluated asynchronously in parallel)</label>
+              <textarea id="socialComments" placeholder="Bro this edit is straight fire 🔥&#10;im dead lol best reel today 💀&#10;Audio is awesome but lighting could be brighter&#10;Oh great another trend 🙄"></textarea>
+            </div>
+          </div>
+
+          <div class="controls-row right-align">
+            <button type="button" id="runSocialBtn" class="primary-btn">
+              <span>Analyze Audience Engagement</span>
+              <i class="fas fa-chart-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="socialResults" class="hidden">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Dominant Sentiment</div>
+              <div class="kpi-value" id="sDominant">--</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Mean Compound</div>
+              <div class="kpi-value indigo" id="sCompound">0.000</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Comments Evaluated</div>
+              <div class="kpi-value" id="sCount">0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Stage-2 RAG Escalations</div>
+              <div class="kpi-value amber" id="sEscalations">0</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h3><i class="fas fa-brain"></i> Audience Emotional Synthesis</h3>
+              <p id="sInterpretation" class="mt-2"></p>
+              <div class="mt-3">
+                <span class="small-label">Extracted Caption:</span>
+                <p id="sCaptionOut" class="muted-text"></p>
+              </div>
+            </div>
+            <div class="card plot-card">
+              <h3><i class="fas fa-chart-area"></i> Compound Distribution</h3>
+              <img id="sPlotImg" alt="Audience sentiment histogram" />
+            </div>
+          </div>
+
+          <div class="card">
+            <h3><i class="fas fa-list-check"></i> Thread Comment Classifications</h3>
+            <div id="sCommentHighlights" class="highlight-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: QDRANT KB & TELEMETRY ==================== -->
+      <section class="tab-panel" id="tab-kb">
+        <div class="grid-2">
+          <!-- Ingest New Ambiguity Knowledge -->
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-plus-circle"></i> Ingest New Idiom / Domain Rule</h2>
+            </div>
+            <p class="hint-block">
+              Semantically chunks and indexes new slang, sarcasm templates, or domain sentiment phrases into Qdrant + BM25 in real time.
+            </p>
+            <div class="form-grid">
+              <div>
+                <label class="field-label">Phrase / Document Text</label>
+                <textarea id="ingestText" class="short-textarea" placeholder="e.g., this latency tuning is pure wizardry fr"></textarea>
+              </div>
+              <div class="grid-2-tight">
+                <div>
+                  <label class="field-label">Sentiment Label</label>
+                  <select id="ingestSentiment">
+                    <option value="POSITIVE">POSITIVE</option>
+                    <option value="NEGATIVE">NEGATIVE</option>
+                    <option value="SARCASTIC">SARCASTIC</option>
+                    <option value="MIXED">MIXED</option>
+                    <option value="NEUTRAL">NEUTRAL</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label">Category</label>
+                  <input type="text" id="ingestCategory" value="custom_domain" />
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Emotion Tag</label>
+                <input type="text" id="ingestEmotion" placeholder="e.g., Impressed &amp; Admiring" />
+              </div>
+              <button type="button" id="runIngestBtn" class="primary-btn">
+                <span>Index into Qdrant + BM25</span>
+                <i class="fas fa-database"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Telemetry Metrics -->
+          <div class="card">
+            <div class="card-header">
+              <h2><i class="fas fa-gauge-high"></i> Live FastAPI Telemetry</h2>
+              <button type="button" id="refreshMetricsBtn" class="secondary-btn">
+                <i class="fas fa-rotate"></i> Refresh
+              </button>
+            </div>
+            <div id="liveMetricsBody" class="telemetry-grid"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-book-open"></i> Indexed Qdrant Affective Precedent Corpus</h3>
+            <span class="mono-pill" id="corpusTotalBadge">0 vectors</span>
+          </div>
+          <div id="corpusList" class="corpus-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Python Environments & Bytecode
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Environment Variables & Secrets (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE & Tooling
+.idea/
+.vscode/
+*.iml
+.pytest_cache/
+.ruff_cache/
+
+# Local Vector Storage & Generated Temp Files
+qdrant_storage/
+chroma_db/
+books/
+*.log
+.vercel/
